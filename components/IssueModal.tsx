@@ -16,9 +16,11 @@ export default function IssueModal({ task, onClose, onRefresh, supabase }: Props
   const [newText, setNewText] = useState('')
   const [newMemo, setNewMemo] = useState('')
 
-  async function checkAutoComplete() {
+  async function checkAutoComplete(overrideId?: number, overrideDone?: boolean) {
     const subsDone = task.subtasks.length === 0 || task.subtasks.every(s => s.done)
-    const issuesDone = task.issues.length === 0 || task.issues.every(i => i.done)
+    const issuesDone = task.issues.length === 0 || task.issues.every(i =>
+      i.id === overrideId ? overrideDone : i.done
+    )
     const hasAny = task.subtasks.length > 0 || task.issues.length > 0
     if (hasAny && subsDone && issuesDone && !task.done) {
       await supabase.from('tasks').update({ done: true, done_at: new Date().toTimeString().slice(0, 5) }).eq('id', task.id)
@@ -26,8 +28,9 @@ export default function IssueModal({ task, onClose, onRefresh, supabase }: Props
   }
 
   async function toggleIssue(s: Issue) {
-    await supabase.from('issues').update({ done: !s.done }).eq('id', s.id)
-    await checkAutoComplete()
+    const nowDone = !s.done
+    await supabase.from('issues').update({ done: nowDone }).eq('id', s.id)
+    await checkAutoComplete(s.id, nowDone)
     await onRefresh()
   }
 

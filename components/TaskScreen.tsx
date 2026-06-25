@@ -14,11 +14,13 @@ type Props = {
   dateLabel: string
   tasks: Task[]
   onBack: () => void
+  onPrevDay: () => void
+  onNextDay: () => void
   onRefresh: () => Promise<void>
   supabase: SupabaseClient
 }
 
-export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onRefresh, supabase }: Props) {
+export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onPrevDay, onNextDay, onRefresh, supabase }: Props) {
   const [tab, setTab] = useState<'todo' | 'done'>('todo')
   const [showAddModal, setShowAddModal] = useState(false)
   const [newText, setNewText] = useState('')
@@ -137,6 +139,12 @@ export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onRefres
   async function deleteTask(id: number) {
     if (!confirm('このタスクを削除しますか？分割タスクや課題も一緒に削除されます。')) return
     await supabase.from('tasks').delete().eq('id', id)
+    const remaining = todoTasks.filter(t => t.id !== id)
+    for (let i = 0; i < remaining.length; i++) {
+      if (remaining[i].prio !== i + 1) {
+        await supabase.from('tasks').update({ prio: i + 1 }).eq('id', remaining[i].id)
+      }
+    }
     await onRefresh()
   }
 
@@ -203,7 +211,11 @@ export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onRefres
       <div style={{ padding: 20, background: '#f0f0f0', minHeight: 560, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ width: '100%', maxWidth: 480 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{ fontSize: 16, fontWeight: 500 }}>{dateLabel}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button onClick={onPrevDay} style={dateNavBtnStyle}><span>«</span></button>
+              <span style={{ fontSize: 16, fontWeight: 500 }}>{dateLabel}</span>
+              <button onClick={onNextDay} style={dateNavBtnStyle}><span>»</span></button>
+            </div>
             <button onClick={() => setShowAddModal(true)} style={addBtnStyle}>
               <span style={{ fontSize: 14 }}>+</span> タスクを追加
             </button>
@@ -378,6 +390,7 @@ export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onRefres
 }
 
 const backBtnStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, padding: '7px 12px', border: '1px solid #ddd', borderRadius: 8, background: 'transparent', color: '#444', cursor: 'pointer' }
+const dateNavBtnStyle: React.CSSProperties = { background: '#fff', border: '1px solid #ddd', cursor: 'pointer', color: '#444', fontSize: 16, width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }
 const addBtnStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, padding: '7px 14px', border: 'none', borderRadius: 8, background: '#444', color: '#fff', cursor: 'pointer' }
 const tabBase: React.CSSProperties = { flex: 1, padding: '8px 0', fontSize: 13, cursor: 'pointer', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, border: 'none' }
 const tabActiveStyle: React.CSSProperties = { ...tabBase, background: '#444', color: '#fff' }

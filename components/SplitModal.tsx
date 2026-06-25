@@ -16,8 +16,10 @@ export default function SplitModal({ task, onClose, onRefresh, supabase }: Props
   const [newText, setNewText] = useState('')
   const [newMemo, setNewMemo] = useState('')
 
-  async function checkAutoComplete() {
-    const subsDone = task.subtasks.length === 0 || task.subtasks.every(s => s.done)
+  async function checkAutoComplete(overrideId?: number, overrideDone?: boolean) {
+    const subsDone = task.subtasks.length === 0 || task.subtasks.every(s =>
+      s.id === overrideId ? overrideDone : s.done
+    )
     const issuesDone = task.issues.length === 0 || task.issues.every(i => i.done)
     const hasAny = task.subtasks.length > 0 || task.issues.length > 0
     if (hasAny && subsDone && issuesDone && !task.done) {
@@ -26,8 +28,9 @@ export default function SplitModal({ task, onClose, onRefresh, supabase }: Props
   }
 
   async function toggleSub(s: SubTask) {
-    await supabase.from('subtasks').update({ done: !s.done }).eq('id', s.id)
-    await checkAutoComplete()
+    const nowDone = !s.done
+    await supabase.from('subtasks').update({ done: nowDone }).eq('id', s.id)
+    await checkAutoComplete(s.id, nowDone)
     await onRefresh()
   }
 

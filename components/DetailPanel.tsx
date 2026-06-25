@@ -24,9 +24,13 @@ export default function DetailPanel({ task, onClose, onRefresh, supabase }: Prop
   const [newIssueText, setNewIssueText] = useState('')
   const [newIssueMemo, setNewIssueMemo] = useState('')
 
-  async function checkAutoComplete() {
-    const subsDone = task.subtasks.length === 0 || task.subtasks.every(s => s.done)
-    const issuesDone = task.issues.length === 0 || task.issues.every(i => i.done)
+  async function checkAutoComplete(overrideKind?: 'sub' | 'issue', overrideId?: number, overrideDone?: boolean) {
+    const subsDone = task.subtasks.length === 0 || task.subtasks.every(s =>
+      overrideKind === 'sub' && s.id === overrideId ? overrideDone : s.done
+    )
+    const issuesDone = task.issues.length === 0 || task.issues.every(i =>
+      overrideKind === 'issue' && i.id === overrideId ? overrideDone : i.done
+    )
     const hasAny = task.subtasks.length > 0 || task.issues.length > 0
     if (hasAny && subsDone && issuesDone && !task.done) {
       await supabase.from('tasks').update({ done: true, done_at: new Date().toTimeString().slice(0, 5) }).eq('id', task.id)
@@ -40,14 +44,16 @@ export default function DetailPanel({ task, onClose, onRefresh, supabase }: Prop
   }
 
   async function toggleSub(s: SubTask) {
-    await supabase.from('subtasks').update({ done: !s.done }).eq('id', s.id)
-    await checkAutoComplete()
+    const nowDone = !s.done
+    await supabase.from('subtasks').update({ done: nowDone }).eq('id', s.id)
+    await checkAutoComplete('sub', s.id, nowDone)
     await onRefresh()
   }
 
   async function toggleIssue(i: Issue) {
-    await supabase.from('issues').update({ done: !i.done }).eq('id', i.id)
-    await checkAutoComplete()
+    const nowDone = !i.done
+    await supabase.from('issues').update({ done: nowDone }).eq('id', i.id)
+    await checkAutoComplete('issue', i.id, nowDone)
     await onRefresh()
   }
 

@@ -37,6 +37,13 @@ export default function CalendarApp({ initialTasks }: { initialTasks: Task[] }) 
     setScreen('calendar')
   }
 
+  function goToAdjacentDate(offset: number) {
+    if (!selectedDate) return
+    const d = new Date(selectedDate.y, selectedDate.m, selectedDate.d)
+    d.setDate(d.getDate() + offset)
+    setSelectedDate({ y: d.getFullYear(), m: d.getMonth(), d: d.getDate() })
+  }
+
   async function refreshTasks() {
     const { data: tasksData } = await supabase.from('tasks').select('*').order('prio', { ascending: true })
     const { data: subtasksData } = await supabase.from('subtasks').select('*')
@@ -62,6 +69,8 @@ export default function CalendarApp({ initialTasks }: { initialTasks: Task[] }) 
         dateLabel={`${monthNames[selectedDate.m]}${selectedDate.d}日（${dow}）`}
         tasks={tasks.filter(t => t.task_date === key)}
         onBack={backToCalendar}
+        onPrevDay={() => goToAdjacentDate(-1)}
+        onNextDay={() => goToAdjacentDate(1)}
         onRefresh={refreshTasks}
         supabase={supabase}
       />
