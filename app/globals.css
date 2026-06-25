@@ -19,6 +19,7 @@ input, textarea { font-family: inherit; }
   transform: none;
   outline: none;
   -webkit-tap-highlight-color: transparent;
+  touch-action: none;
 }
 
 .task-card:focus,

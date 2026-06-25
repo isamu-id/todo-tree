@@ -112,19 +112,25 @@ export default function DetailPanel({ task, onClose, onRefresh, supabase }: Prop
             {list.map(item => {
               const isEditing = editingItem?.kind === kind && editingItem.id === item.id
               return (
-                <div key={item.id} style={{ position: 'relative', background: '#f5f5f5', borderRadius: 8, overflow: 'hidden' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 9px' }}>
-                    <div
-                      onClick={() => kind === 'sub' ? toggleSub(item as SubTask) : toggleIssue(item as Issue)}
-                      style={{
-                        width: 14, height: 14, borderRadius: '50%',
-                        border: item.done ? '1.5px solid #444' : '1.5px dashed #ccc',
-                        background: item.done ? '#444' : 'transparent',
-                        flexShrink: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}
-                    >
-                      {item.done && <span style={{ fontSize: 8, color: '#fff' }} >✓</span>}
+                <div key={item.id} style={{ position: 'relative', background: '#f5f5f5', borderRadius: 8, overflow: 'hidden', display: 'flex' }}>
+                  <div
+                    onClick={() => kind === 'sub' ? toggleSub(item as SubTask) : toggleIssue(item as Issue)}
+                    style={{
+                      width: 40, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', background: item.done ? '#e6f4ea' : '#ececec',
+                    }}
+                  >
+                    <div style={{
+                      width: 20, height: 20, borderRadius: '50%',
+                      border: item.done ? '2px solid #2e7d4f' : '2px dashed #bbb',
+                      background: item.done ? '#2e7d4f' : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      {item.done && <span style={{ fontSize: 11, color: '#fff' }}>✓</span>}
                     </div>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 9px' }}>
                     <span style={{ fontSize: 13, flex: 1, color: item.done ? '#aaa' : '#333', textDecoration: item.done ? 'line-through' : 'none' }}>
                       {item.text}
                     </span>
@@ -147,13 +153,14 @@ export default function DetailPanel({ task, onClose, onRefresh, supabase }: Prop
                       </div>
                     </div>
                   ) : item.memo ? (
-                    <div style={{ padding: '0 9px 8px 31px' }}>
+                    <div style={{ padding: '0 9px 8px 9px' }}>
                       <div style={{ fontSize: 12, color: '#555', lineHeight: 1.5, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                         <span style={memoChipStyle}><span style={{ fontSize: 9 }} >📝</span> メモ</span>
                         <span>{item.memo}</span>
                       </div>
                     </div>
                   ) : null}
+                  </div>
                 </div>
               )
             })}

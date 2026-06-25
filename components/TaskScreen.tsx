@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useLayoutEffect } from 'react'
+import { useState, useRef, useLayoutEffect, useEffect } from 'react'
 import type { Task } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import DetailPanel from './DetailPanel'
@@ -69,6 +69,39 @@ export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onRefres
     prevRects.current = newMap
   }, [todoTasks.map(t => t.id).join(',')])
 
+  // マウス・タッチ操作中はdocument全体でドラッグの移動・終了を検知する
+  useEffect(() => {
+    function onMouseMove(e: MouseEvent) {
+      if (!dragState.current) return
+      moveDrag(e.clientX, e.clientY)
+    }
+    function onMouseUp(e: MouseEvent) {
+      if (!dragState.current) return
+      endDrag(e.clientX, e.clientY)
+    }
+    function onTouchMove(e: TouchEvent) {
+      if (!dragState.current) return
+      const t = e.touches[0]
+      moveDrag(t.clientX, t.clientY)
+      if (dragState.current?.dragging) e.preventDefault()
+    }
+    function onTouchEnd(e: TouchEvent) {
+      if (!dragState.current) return
+      const t = e.changedTouches[0]
+      endDrag(t.clientX, t.clientY)
+    }
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    document.addEventListener('touchend', onTouchEnd)
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+      document.removeEventListener('touchmove', onTouchMove)
+      document.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [todoTasks])
+
   async function addTask() {
     if (!newText.trim()) return
     const maxPrio = todoTasks.length + 1
@@ -98,40 +131,56 @@ export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onRefres
     await onRefresh()
   }
 
-  function handleMouseDown(e: React.MouseEvent, id: number) {
-    if ((e.target as HTMLElement).closest('button,[data-chk]')) return
-    dragState.current = { id, startX: e.clientX, startY: e.clientY, dragging: false }
+  function startDrag(clientX: number, clientY: number, id: number) {
+    dragState.current = { id, startX: clientX, startY: clientY, dragging: false }
   }
 
-  function handleMouseMove(e: React.MouseEvent) {
+  function moveDrag(clientX: number, clientY: number) {
     const ds = dragState.current
     if (!ds) return
-    const dx = Math.abs(e.clientX - ds.startX), dy = Math.abs(e.clientY - ds.startY)
+    const dx = Math.abs(clientX - ds.startX), dy = Math.abs(clientY - ds.startY)
     if (!ds.dragging && (dx > 6 || dy > 6)) {
       ds.dragging = true
       setDraggingId(ds.id)
     }
   }
 
-  async function handleMouseUp(e: React.MouseEvent, targetId: number) {
+  async function endDrag(clientX: number, clientY: number) {
     const ds = dragState.current
     if (!ds) return
     dragState.current = null
     setDraggingId(null)
-    if (ds.dragging && ds.id !== targetId) {
-      const srcIdx = todoTasks.findIndex(t => t.id === ds.id)
-      const tgtIdx = todoTasks.findIndex(t => t.id === targetId)
-      const reordered = [...todoTasks]
-      const [moved] = reordered.splice(srcIdx, 1)
-      const newTgtIdx = reordered.findIndex(t => t.id === targetId)
-      reordered.splice(newTgtIdx + (srcIdx < tgtIdx ? 1 : 0), 0, moved)
-      for (let i = 0; i < reordered.length; i++) {
-        await supabase.from('tasks').update({ prio: i + 1 }).eq('id', reordered[i].id)
+
+    if (ds.dragging) {
+      const el = document.elementFromPoint(clientX, clientY)
+      const cardEl = el?.closest<HTMLElement>('[data-task-id]')
+      const targetId = cardEl ? Number(cardEl.dataset.taskId) : null
+      if (targetId !== null && targetId !== ds.id) {
+        const srcIdx = todoTasks.findIndex(t => t.id === ds.id)
+        const tgtIdx = todoTasks.findIndex(t => t.id === targetId)
+        const reordered = [...todoTasks]
+        const [moved] = reordered.splice(srcIdx, 1)
+        const newTgtIdx = reordered.findIndex(t => t.id === targetId)
+        reordered.splice(newTgtIdx + (srcIdx < tgtIdx ? 1 : 0), 0, moved)
+        for (let i = 0; i < reordered.length; i++) {
+          await supabase.from('tasks').update({ prio: i + 1 }).eq('id', reordered[i].id)
+        }
+        await onRefresh()
       }
-      await onRefresh()
-    } else if (!ds.dragging) {
-      setDetailTaskId(targetId)
+    } else {
+      setDetailTaskId(ds.id)
     }
+  }
+
+  function handleMouseDown(e: React.MouseEvent, id: number) {
+    if ((e.target as HTMLElement).closest('button,[data-chk]')) return
+    startDrag(e.clientX, e.clientY, id)
+  }
+
+  function handleTouchStart(e: React.TouchEvent, id: number) {
+    if ((e.target as HTMLElement).closest('button,[data-chk]')) return
+    const t = e.touches[0]
+    startDrag(t.clientX, t.clientY, id)
   }
 
   return (
@@ -180,8 +229,7 @@ export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onRefres
                     className={cardClass}
                     style={{ cursor: 'grab' }}
                     onMouseDown={e => handleMouseDown(e, t.id)}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={e => handleMouseUp(e, t.id)}
+                    onTouchStart={e => handleTouchStart(e, t.id)}
                   >
                     <div style={{ display: 'flex' }}>
                       <div style={prioBoxStyle(t.prio)}>
