@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useLayoutEffect, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import type { Task } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import DetailPanel from './DetailPanel'
@@ -32,10 +32,16 @@ export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onPrevDa
   const [carryTaskId, setCarryTaskId] = useState<number | null>(null)
   const [draggingId, setDraggingId] = useState<number | null>(null)
 
-  const dragState = useRef<{ id: number; startX: number; startY: number; dragging: boolean } | null>(null)
+  const dragState = useRef<{
+    id: number
+    startY: number
+    dragging: boolean
+    origTop: number
+    rowHeight: number
+    order: number[]
+    currentOrder: number[]
+  } | null>(null)
   const listRef = useRef<HTMLDivElement | null>(null)
-  const prevRects = useRef<Map<number, DOMRect>>(new Map())
-  const skipAnimRef = useRef(true)
 
   const todoTasks = tasks.filter(t => !t.done).sort((a, b) => a.prio - b.prio)
   const doneTasks = tasks.filter(t => t.done)
@@ -45,61 +51,25 @@ export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onPrevDa
   const issueTask = tasks.find(t => t.id === issueTaskId) ?? null
   const carryTask = tasks.find(t => t.id === carryTaskId) ?? null
 
-  // FLIPアニメーション: レンダー後に前回位置と比較してtransformで滑らかに移動
-  useLayoutEffect(() => {
-    const container = listRef.current
-    if (!container) return
-    const cards = Array.from(container.querySelectorAll<HTMLElement>('[data-task-id]'))
-
-    if (!skipAnimRef.current) {
-      cards.forEach(card => {
-        const id = Number(card.dataset.taskId)
-        if (id === draggingId) return
-        const prevRect = prevRects.current.get(id)
-        if (!prevRect) return
-        const newRect = card.getBoundingClientRect()
-        const dy = prevRect.top - newRect.top
-        if (Math.abs(dy) > 0.5) {
-          card.style.transform = `translateY(${dy}px)`
-          card.style.transition = 'transform 0s'
-          requestAnimationFrame(() => {
-            card.style.transition = 'transform 0.25s cubic-bezier(.4,0,.2,1)'
-            card.style.transform = 'translateY(0)'
-            const clear = () => { card.style.transform = ''; card.style.transition = '' }
-            card.addEventListener('transitionend', clear, { once: true })
-          })
-        }
-      })
-    }
-    skipAnimRef.current = false
-
-    const newMap = new Map<number, DOMRect>()
-    cards.forEach(card => {
-      newMap.set(Number(card.dataset.taskId), card.getBoundingClientRect())
-    })
-    prevRects.current = newMap
-  }, [todoTasks.map(t => t.id).join(',')])
-
   // マウス・タッチ操作中はdocument全体でドラッグの移動・終了を検知する
   useEffect(() => {
     function onMouseMove(e: MouseEvent) {
       if (!dragState.current) return
-      moveDrag(e.clientX, e.clientY)
+      moveDrag(e.clientY)
     }
-    function onMouseUp(e: MouseEvent) {
+    function onMouseUp() {
       if (!dragState.current) return
-      endDrag(e.clientX, e.clientY)
+      endDrag()
     }
     function onTouchMove(e: TouchEvent) {
       if (!dragState.current) return
       const t = e.touches[0]
-      moveDrag(t.clientX, t.clientY)
+      moveDrag(t.clientY)
       if (dragState.current?.dragging) e.preventDefault()
     }
-    function onTouchEnd(e: TouchEvent) {
+    function onTouchEnd() {
       if (!dragState.current) return
-      const t = e.changedTouches[0]
-      endDrag(t.clientX, t.clientY)
+      endDrag()
     }
     document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
@@ -148,39 +118,74 @@ export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onPrevDa
     await onRefresh()
   }
 
-  function startDrag(clientX: number, clientY: number, id: number) {
-    dragState.current = { id, startX: clientX, startY: clientY, dragging: false }
+  function getRows(): HTMLElement[] {
+    const container = listRef.current
+    if (!container) return []
+    return Array.from(container.querySelectorAll<HTMLElement>('[data-task-id]'))
   }
 
-  function moveDrag(clientX: number, clientY: number) {
-    const ds = dragState.current
-    if (!ds) return
-    const dx = Math.abs(clientX - ds.startX), dy = Math.abs(clientY - ds.startY)
-    if (!ds.dragging && (dx > 6 || dy > 6)) {
-      ds.dragging = true
-      setDraggingId(ds.id)
+  function startDrag(clientY: number, id: number) {
+    const rows = getRows()
+    const order = todoTasks.map(t => t.id)
+    const row = rows.find(r => Number(r.dataset.taskId) === id)
+    if (!row) return
+    dragState.current = {
+      id, startY: clientY, dragging: false,
+      origTop: row.offsetTop, rowHeight: row.offsetHeight, order, currentOrder: order,
     }
   }
 
-  async function endDrag(clientX: number, clientY: number) {
+  function moveDrag(clientY: number) {
+    const ds = dragState.current
+    if (!ds) return
+    const dy = clientY - ds.startY
+    if (!ds.dragging && Math.abs(dy) > 6) {
+      ds.dragging = true
+      setDraggingId(ds.id)
+    }
+    if (!ds.dragging) return
+
+    const rows = getRows()
+    const dragRow = rows.find(r => Number(r.dataset.taskId) === ds.id)
+    if (!dragRow) return
+    dragRow.style.transform = `translateY(${dy}px)`
+
+    const dragCenter = ds.origTop + dy + ds.rowHeight / 2
+    const dragIdx = ds.order.indexOf(ds.id)
+    const targetIdx = Math.max(0, Math.min(ds.order.length - 1, Math.round((dragCenter - ds.rowHeight / 2) / (ds.rowHeight + 8))))
+    rows.forEach(row => {
+      const id = Number(row.dataset.taskId)
+      if (id === ds.id) return
+      const rowIdx = ds.order.indexOf(id)
+      let shift = 0
+      if (rowIdx > dragIdx && rowIdx <= targetIdx) shift = -(ds.rowHeight + 8)
+      else if (rowIdx < dragIdx && rowIdx >= targetIdx) shift = (ds.rowHeight + 8)
+      row.style.transform = shift !== 0 ? `translateY(${shift}px)` : ''
+    })
+
+    const reordered = [...ds.order]
+    reordered.splice(dragIdx, 1)
+    reordered.splice(targetIdx, 0, ds.id)
+    ds.currentOrder = reordered
+  }
+
+  async function endDrag() {
     const ds = dragState.current
     if (!ds) return
     dragState.current = null
     setDraggingId(null)
 
+    const rows = getRows()
+    rows.forEach(row => { row.style.transform = '' })
+
     if (ds.dragging) {
-      const el = document.elementFromPoint(clientX, clientY)
-      const cardEl = el?.closest<HTMLElement>('[data-task-id]')
-      const targetId = cardEl ? Number(cardEl.dataset.taskId) : null
-      if (targetId !== null && targetId !== ds.id) {
-        const srcIdx = todoTasks.findIndex(t => t.id === ds.id)
-        const tgtIdx = todoTasks.findIndex(t => t.id === targetId)
-        const reordered = [...todoTasks]
-        const [moved] = reordered.splice(srcIdx, 1)
-        const newTgtIdx = reordered.findIndex(t => t.id === targetId)
-        reordered.splice(newTgtIdx + (srcIdx < tgtIdx ? 1 : 0), 0, moved)
-        for (let i = 0; i < reordered.length; i++) {
-          await supabase.from('tasks').update({ prio: i + 1 }).eq('id', reordered[i].id)
+      const finalOrder: number[] = ds.currentOrder ?? ds.order
+      if (finalOrder.join(',') !== ds.order.join(',')) {
+        for (let i = 0; i < finalOrder.length; i++) {
+          const task = todoTasks.find(t => t.id === finalOrder[i])
+          if (task && task.prio !== i + 1) {
+            await supabase.from('tasks').update({ prio: i + 1 }).eq('id', finalOrder[i])
+          }
         }
         await onRefresh()
       }
@@ -191,13 +196,13 @@ export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onPrevDa
 
   function handleMouseDown(e: React.MouseEvent, id: number) {
     if ((e.target as HTMLElement).closest('button,[data-chk]')) return
-    startDrag(e.clientX, e.clientY, id)
+    startDrag(e.clientY, id)
   }
 
   function handleTouchStart(e: React.TouchEvent, id: number) {
     if ((e.target as HTMLElement).closest('button,[data-chk]')) return
     const t = e.touches[0]
-    startDrag(t.clientX, t.clientY, id)
+    startDrag(t.clientY, id)
   }
 
   return (

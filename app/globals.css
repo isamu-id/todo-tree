@@ -16,10 +16,10 @@ input, textarea { font-family: inherit; }
   overflow: hidden;
   user-select: none;
   box-shadow: none;
-  transform: none;
   outline: none;
   -webkit-tap-highlight-color: transparent;
   touch-action: none;
+  transition: transform 0.15s ease;
 }
 
 .task-card:focus,
@@ -30,11 +30,11 @@ input, textarea { font-family: inherit; }
 }
 
 .task-card.is-dragging {
-  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.18);
   border-color: #444;
-  transform: scale(1.02);
   position: relative;
   z-index: 10;
+  transition: none;
 }
 
 .task-card.has-carry {
