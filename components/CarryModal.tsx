@@ -123,6 +123,6 @@ const overlayStyle: React.CSSProperties = { position: 'fixed', inset: 0, backgro
 const modalStyle: React.CSSProperties = { background: '#fff', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 14, width: 300 }
 const xBtnStyle: React.CSSProperties = { background: '#444', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 14, width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }
 const navBtnStyle: React.CSSProperties = { background: 'transparent', border: 'none', cursor: 'pointer', color: '#444', fontSize: 14, padding: '2px 6px' }
-const inputStyle: React.CSSProperties = { fontSize: 14, padding: '8px 10px', border: '1px solid #ddd', borderRadius: 8, background: '#fafafa', color: '#333', outline: 'none', fontFamily: 'inherit', resize: 'none' }
+const inputStyle: React.CSSProperties = { fontSize: 16, padding: '8px 10px', border: '1px solid #ddd', borderRadius: 8, background: '#fafafa', color: '#333', outline: 'none', fontFamily: 'inherit', resize: 'none' }
 const saveBtnStyle: React.CSSProperties = { flex: 2, padding: '9px 0', fontSize: 13, border: 'none', borderRadius: 8, background: '#444', color: '#fff', cursor: 'pointer' }
 const cancelBtnStyle: React.CSSProperties = { flex: 1, padding: '9px 0', fontSize: 13, border: '1.5px solid rgba(0,0,0,0.15)', borderRadius: 8, background: 'transparent', color: 'rgba(0,0,0,0.3)', cursor: 'pointer' }

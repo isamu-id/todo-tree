@@ -167,7 +167,7 @@ export default function DetailPanel({ task, onClose, onRefresh, supabase }: Prop
               value={kind === 'sub' ? newSubText : newIssueText}
               onChange={e => kind === 'sub' ? setNewSubText(e.target.value) : setNewIssueText(e.target.value)}
               placeholder={kind === 'sub' ? 'サブタスク名を入力...' : '課題を入力...'}
-              style={{ width: '100%', fontSize: 13, padding: '8px 10px', border: 'none', outline: 'none', fontFamily: 'inherit' }}
+              style={{ width: '100%', fontSize: 16, padding: '8px 10px', border: 'none', outline: 'none', fontFamily: 'inherit' }}
               autoFocus
             />
             <textarea
@@ -176,7 +176,7 @@ export default function DetailPanel({ task, onClose, onRefresh, supabase }: Prop
               onChange={e => kind === 'sub' ? setNewSubMemo(e.target.value) : setNewIssueMemo(e.target.value)}
               rows={2}
               placeholder="メモ（任意）"
-              style={{ width: '100%', fontSize: 12, padding: '6px 10px 8px', border: 'none', borderTop: '0.5px solid #eee', outline: 'none', fontFamily: 'inherit', resize: 'none', color: '#555', background: '#fafafa' }}
+              style={{ width: '100%', fontSize: 16, padding: '6px 10px 8px', border: 'none', borderTop: '0.5px solid #eee', outline: 'none', fontFamily: 'inherit', resize: 'none', color: '#555', background: '#fafafa' }}
             />
             <div style={{ display: 'flex', gap: 8, padding: '8px 10px', borderTop: '0.5px solid #eee', background: '#fafafa' }}>
               <button onClick={kind === 'sub' ? addSub : addIssue} style={tinySaveBtnStyle}>追加する</button>
@@ -256,13 +256,13 @@ export default function DetailPanel({ task, onClose, onRefresh, supabase }: Prop
 const xBtnStyle: React.CSSProperties = { background: '#444', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 14, width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }
 const sLabelStyle: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: '#888', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }
 const editBtnStyle: React.CSSProperties = { fontSize: 11, padding: '3px 9px', borderRadius: 6, border: '1px solid #444', background: 'transparent', color: '#444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }
-const textareaStyle: React.CSSProperties = { width: '100%', fontSize: 13, padding: '8px 10px', border: '1px solid #ddd', borderRadius: 8, background: '#fafafa', color: '#333', outline: 'none', fontFamily: 'inherit', resize: 'none' }
+const textareaStyle: React.CSSProperties = { width: '100%', fontSize: 16, padding: '8px 10px', border: '1px solid #ddd', borderRadius: 8, background: '#fafafa', color: '#333', outline: 'none', fontFamily: 'inherit', resize: 'none' }
 const memoSaveBtnStyle: React.CSSProperties = { padding: '7px 0', fontSize: 12, border: 'none', borderRadius: 8, background: '#444', color: '#fff', cursor: 'pointer', flex: 1 }
 const memoCancelBtnStyle: React.CSSProperties = { padding: '7px 0', fontSize: 12, border: '1.5px solid rgba(0,0,0,0.15)', borderRadius: 8, background: 'transparent', color: 'rgba(0,0,0,0.3)', cursor: 'pointer', flex: 1 }
 const memoBoxStyle: React.CSSProperties = { padding: 10, background: '#f5f5f5', borderRadius: 8, borderLeft: '2px solid #ccc', fontSize: 13, color: '#555', lineHeight: 1.6, whiteSpace: 'pre-wrap' }
 const smallEditBtnStyle: React.CSSProperties = { fontSize: 10, padding: '2px 7px', borderRadius: 5, border: '1px solid #aaa', background: 'transparent', color: '#888', cursor: 'pointer', flexShrink: 0 }
 const smallDelBtnStyle: React.CSSProperties = { width: 20, height: 20, borderRadius: '50%', border: 'none', background: 'transparent', color: '#ccc', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }
-const smallInputStyle: React.CSSProperties = { width: '100%', fontSize: 13, padding: '6px 8px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', color: '#333', outline: 'none', fontFamily: 'inherit', resize: 'none' }
+const smallInputStyle: React.CSSProperties = { width: '100%', fontSize: 16, padding: '6px 8px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', color: '#333', outline: 'none', fontFamily: 'inherit', resize: 'none' }
 const tinySaveBtnStyle: React.CSSProperties = { padding: '4px 10px', fontSize: 11, border: 'none', borderRadius: 6, background: '#444', color: '#fff', cursor: 'pointer' }
 const tinyCancelBtnStyle: React.CSSProperties = { padding: '4px 10px', fontSize: 11, border: '1px solid rgba(0,0,0,0.15)', borderRadius: 6, background: 'transparent', color: 'rgba(0,0,0,0.3)', cursor: 'pointer' }
 const memoChipStyle: React.CSSProperties = { fontSize: 10, padding: '2px 8px', borderRadius: 10, background: '#eee', color: '#777', display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0, fontWeight: 500, marginTop: 1 }
