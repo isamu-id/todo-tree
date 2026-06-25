@@ -150,16 +150,19 @@ export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onPrevDa
     if (!dragRow) return
     dragRow.style.transform = `translateY(${dy}px)`
 
-    const dragCenter = ds.origTop + dy + ds.rowHeight / 2
     const dragIdx = ds.order.indexOf(ds.id)
-    const targetIdx = Math.max(0, Math.min(ds.order.length - 1, Math.round((dragCenter - ds.rowHeight / 2) / (ds.rowHeight + 8))))
+    const step = ds.rowHeight + 8
+    // ドラッグ開始位置から何行分動いたかを四捨五入で求める（上下対称）
+    const stepsMoved = Math.round(dy / step)
+    const targetIdx = Math.max(0, Math.min(ds.order.length - 1, dragIdx + stepsMoved))
+
     rows.forEach(row => {
       const id = Number(row.dataset.taskId)
       if (id === ds.id) return
       const rowIdx = ds.order.indexOf(id)
       let shift = 0
-      if (rowIdx > dragIdx && rowIdx <= targetIdx) shift = -(ds.rowHeight + 8)
-      else if (rowIdx < dragIdx && rowIdx >= targetIdx) shift = (ds.rowHeight + 8)
+      if (rowIdx > dragIdx && rowIdx <= targetIdx) shift = -step
+      else if (rowIdx < dragIdx && rowIdx >= targetIdx) shift = step
       row.style.transform = shift !== 0 ? `translateY(${shift}px)` : ''
     })
 
