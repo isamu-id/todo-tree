@@ -1,0 +1,41 @@
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f5f5f0;
+  color: #1a1a1a;
+}
+
+button { font-family: inherit; cursor: pointer; }
+input, textarea { font-family: inherit; }
+
+.task-card {
+  background: #fff;
+  border: 0.5px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  user-select: none;
+  box-shadow: none;
+  transform: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.task-card:focus,
+.task-card:focus-visible,
+.task-card:active {
+  outline: none;
+  border-color: #eee;
+}
+
+.task-card.is-dragging {
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+  border-color: #444;
+  transform: scale(1.02);
+  position: relative;
+  z-index: 10;
+}
+
+.task-card.has-carry {
+  border-left: 3px solid #BA7517;
+}
