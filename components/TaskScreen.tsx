@@ -4,6 +4,9 @@ import { useState, useRef, useLayoutEffect, useEffect } from 'react'
 import type { Task } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import DetailPanel from './DetailPanel'
+import TaskSummary from './TaskSummary'
+import SplitModal from './SplitModal'
+import IssueModal from './IssueModal'
 import CarryModal from './CarryModal'
 
 type Props = {
@@ -21,6 +24,9 @@ export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onRefres
   const [newText, setNewText] = useState('')
   const [newMemo, setNewMemo] = useState('')
   const [detailTaskId, setDetailTaskId] = useState<number | null>(null)
+  const [editTaskId, setEditTaskId] = useState<number | null>(null)
+  const [splitTaskId, setSplitTaskId] = useState<number | null>(null)
+  const [issueTaskId, setIssueTaskId] = useState<number | null>(null)
   const [carryTaskId, setCarryTaskId] = useState<number | null>(null)
   const [draggingId, setDraggingId] = useState<number | null>(null)
 
@@ -32,6 +38,9 @@ export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onRefres
   const todoTasks = tasks.filter(t => !t.done).sort((a, b) => a.prio - b.prio)
   const doneTasks = tasks.filter(t => t.done)
   const detailTask = tasks.find(t => t.id === detailTaskId) ?? null
+  const editTask = tasks.find(t => t.id === editTaskId) ?? null
+  const splitTask = tasks.find(t => t.id === splitTaskId) ?? null
+  const issueTask = tasks.find(t => t.id === issueTaskId) ?? null
   const carryTask = tasks.find(t => t.id === carryTaskId) ?? null
 
   // FLIPアニメーション: レンダー後に前回位置と比較してtransformで滑らかに移動
@@ -254,16 +263,25 @@ export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onRefres
                             <span>×</span>
                           </button>
                         </div>
-                        <div style={{ display: 'flex', gap: 5, marginTop: 8, flexWrap: 'wrap' }}>
-                          <button onClick={e => { e.stopPropagation(); setDetailTaskId(t.id) }} style={actionBtnStyle}>
-                            <span style={{ fontSize: 11 }}>▤</span> 分割
-                          </button>
-                          <button onClick={e => { e.stopPropagation(); setDetailTaskId(t.id) }} style={actionBtnStyle}>
-                            <span style={{ fontSize: 11 }}>⚠</span> 課題
-                          </button>
-                          <button onClick={e => { e.stopPropagation(); setCarryTaskId(t.id) }} style={actionBtnStyle}>
-                            <span style={{ fontSize: 11 }}>→</span> 繰り越す
-                          </button>
+                        <div style={{ display: 'flex', gap: 16, marginTop: 10, justifyContent: 'center' }}>
+                          <div style={squareBtnWrapStyle}>
+                            <button onClick={e => { e.stopPropagation(); setSplitTaskId(t.id) }} style={squareBtnStyle}>
+                              <span style={{ fontSize: 18 }}>▤</span>
+                            </button>
+                            <span style={squareBtnLabelStyle}>分割</span>
+                          </div>
+                          <div style={squareBtnWrapStyle}>
+                            <button onClick={e => { e.stopPropagation(); setIssueTaskId(t.id) }} style={squareBtnStyle}>
+                              <span style={{ fontSize: 18 }}>⚠</span>
+                            </button>
+                            <span style={squareBtnLabelStyle}>課題</span>
+                          </div>
+                          <div style={squareBtnWrapStyle}>
+                            <button onClick={e => { e.stopPropagation(); setCarryTaskId(t.id) }} style={squareBtnStyle}>
+                              <span style={{ fontSize: 18 }}>→</span>
+                            </button>
+                            <span style={squareBtnLabelStyle}>繰り越す</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -331,7 +349,25 @@ export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onRefres
       )}
 
       {detailTask && (
-        <DetailPanel task={detailTask} onClose={() => setDetailTaskId(null)} onRefresh={onRefresh} supabase={supabase} />
+        <TaskSummary
+          task={detailTask}
+          onClose={() => setDetailTaskId(null)}
+          onEdit={() => { setEditTaskId(detailTask.id); setDetailTaskId(null) }}
+          onRefresh={onRefresh}
+          supabase={supabase}
+        />
+      )}
+
+      {editTask && (
+        <DetailPanel task={editTask} onClose={() => setEditTaskId(null)} onRefresh={onRefresh} supabase={supabase} />
+      )}
+
+      {splitTask && (
+        <SplitModal task={splitTask} onClose={() => setSplitTaskId(null)} onRefresh={onRefresh} supabase={supabase} />
+      )}
+
+      {issueTask && (
+        <IssueModal task={issueTask} onClose={() => setIssueTaskId(null)} onRefresh={onRefresh} supabase={supabase} />
       )}
 
       {carryTask && (
@@ -350,8 +386,11 @@ const tabCountActiveStyle: React.CSSProperties = { fontSize: 11, padding: '1px 7
 const tabCountInactiveStyle: React.CSSProperties = { fontSize: 11, padding: '1px 7px', borderRadius: 10, background: 'transparent', color: 'rgba(0,0,0,0.3)' }
 const emptyStyle: React.CSSProperties = { textAlign: 'center', padding: '2rem', color: '#ccc', fontSize: 13 }
 
-const delBtnStyle: React.CSSProperties = { width: 24, height: 24, borderRadius: '50%', border: 'none', background: 'transparent', color: '#ccc', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, marginLeft: 'auto', flexShrink: 0 }
-const actionBtnStyle: React.CSSProperties = { fontSize: 11, padding: '3px 9px', borderRadius: 6, border: '1px solid #444', background: 'transparent', color: '#444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }
+const delBtnStyle: React.CSSProperties = { width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'transparent', color: '#ccc', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, marginLeft: 'auto', flexShrink: 0 }
+const actionBtnStyle: React.CSSProperties = { fontSize: 13, padding: '8px 14px', borderRadius: 10, border: '1px solid #444', background: 'transparent', color: '#444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
+const squareBtnWrapStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }
+const squareBtnStyle: React.CSSProperties = { width: 48, height: 48, borderRadius: 12, border: '1px solid #444', background: 'transparent', color: '#444', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }
+const squareBtnLabelStyle: React.CSSProperties = { fontSize: 10, color: '#888' }
 const carryBadgeStyle: React.CSSProperties = { fontSize: 10, padding: '2px 7px', borderRadius: 10, background: '#FAEEDA', color: '#BA7517', display: 'flex', alignItems: 'center', gap: 3, whiteSpace: 'nowrap', flexShrink: 0 }
 const overlayStyle: React.CSSProperties = { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }
 const modalStyle: React.CSSProperties = { background: '#fff', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 14, width: 320 }

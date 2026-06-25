@@ -138,7 +138,7 @@ export default function DetailPanel({ task, onClose, onRefresh, supabase }: Prop
                       <span style={{ fontSize: 9 }} >✎</span> 編集
                     </button>
                     <button onClick={() => kind === 'sub' ? deleteSub(item.id) : deleteIssue(item.id)} style={smallDelBtnStyle}>
-                      <span style={{ fontSize: 11 }} >×</span>
+                      <span style={{ fontSize: 16 }} >×</span>
                     </button>
                   </div>
                   {isEditing ? (
@@ -268,7 +268,7 @@ const memoSaveBtnStyle: React.CSSProperties = { padding: '7px 0', fontSize: 12, 
 const memoCancelBtnStyle: React.CSSProperties = { padding: '7px 0', fontSize: 12, border: '1.5px solid rgba(0,0,0,0.15)', borderRadius: 8, background: 'transparent', color: 'rgba(0,0,0,0.3)', cursor: 'pointer', flex: 1 }
 const memoBoxStyle: React.CSSProperties = { padding: 10, background: '#f5f5f5', borderRadius: 8, borderLeft: '2px solid #ccc', fontSize: 13, color: '#555', lineHeight: 1.6, whiteSpace: 'pre-wrap' }
 const smallEditBtnStyle: React.CSSProperties = { fontSize: 10, padding: '2px 7px', borderRadius: 5, border: '1px solid #aaa', background: 'transparent', color: '#888', cursor: 'pointer', flexShrink: 0 }
-const smallDelBtnStyle: React.CSSProperties = { width: 20, height: 20, borderRadius: '50%', border: 'none', background: 'transparent', color: '#ccc', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }
+const smallDelBtnStyle: React.CSSProperties = { width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'transparent', color: '#ccc', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 16 }
 const smallInputStyle: React.CSSProperties = { width: '100%', fontSize: 16, padding: '6px 8px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', color: '#333', outline: 'none', fontFamily: 'inherit', resize: 'none' }
 const tinySaveBtnStyle: React.CSSProperties = { padding: '4px 10px', fontSize: 11, border: 'none', borderRadius: 6, background: '#444', color: '#fff', cursor: 'pointer' }
 const tinyCancelBtnStyle: React.CSSProperties = { padding: '4px 10px', fontSize: 11, border: '1px solid rgba(0,0,0,0.15)', borderRadius: 6, background: 'transparent', color: 'rgba(0,0,0,0.3)', cursor: 'pointer' }
