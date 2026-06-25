@@ -91,8 +91,15 @@ export default function TaskSummary({ task, onClose, onEdit, onRefresh, supabase
         </div>
 
         {task.carry_from && (
-          <div style={carryTagStyle}>
-            <span>⏱</span> {task.carry_from}から繰り越し
+          <div>
+            <div style={carryTagStyle}>
+              <span>⏱</span> {task.carry_from}から繰り越し
+            </div>
+            {task.carry_reason && (
+              <div style={{ fontSize: 12, color: '#999', marginTop: 4, paddingLeft: 4 }}>
+                理由：{task.carry_reason}
+              </div>
+            )}
           </div>
         )}
 
@@ -121,15 +128,20 @@ export default function TaskSummary({ task, onClose, onEdit, onRefresh, supabase
                 <div
                   onClick={() => toggleSub(s)}
                   style={{
-                    width: 18, height: 18, borderRadius: '50%', flexShrink: 0, cursor: 'pointer',
-                    border: s.done ? '2px solid #2e7d4f' : '2px dashed #ccc',
-                    background: s.done ? '#2e7d4f' : 'transparent',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: 40, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', background: s.done ? '#e6f4ea' : '#ececec',
                   }}
                 >
-                  {s.done && <span style={{ color: '#fff', fontSize: 10 }}>✓</span>}
+                  <div style={{
+                    width: 20, height: 20, borderRadius: '50%',
+                    border: s.done ? '2px solid #2e7d4f' : '2px dashed #bbb',
+                    background: s.done ? '#2e7d4f' : 'transparent',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {s.done && <span style={{ color: '#fff', fontSize: 11 }}>✓</span>}
+                  </div>
                 </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '8px 10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ flex: 1, fontSize: 13, color: s.done ? '#aaa' : '#333', textDecoration: s.done ? 'line-through' : 'none' }}>
                       {s.text}
@@ -158,15 +170,20 @@ export default function TaskSummary({ task, onClose, onEdit, onRefresh, supabase
                 <div
                   onClick={() => toggleIssue(i)}
                   style={{
-                    width: 18, height: 18, borderRadius: '50%', flexShrink: 0, cursor: 'pointer',
-                    border: i.done ? '2px solid #2e7d4f' : '2px dashed #ccc',
-                    background: i.done ? '#2e7d4f' : 'transparent',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: 40, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', background: i.done ? '#e6f4ea' : '#ececec',
                   }}
                 >
-                  {i.done && <span style={{ color: '#fff', fontSize: 10 }}>✓</span>}
+                  <div style={{
+                    width: 20, height: 20, borderRadius: '50%',
+                    border: i.done ? '2px solid #2e7d4f' : '2px dashed #bbb',
+                    background: i.done ? '#2e7d4f' : 'transparent',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {i.done && <span style={{ color: '#fff', fontSize: 11 }}>✓</span>}
+                  </div>
                 </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '8px 10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ flex: 1, fontSize: 13, color: i.done ? '#aaa' : '#333', textDecoration: i.done ? 'line-through' : 'none' }}>
                       {i.text}
@@ -194,6 +211,6 @@ export default function TaskSummary({ task, onClose, onEdit, onRefresh, supabase
 const editBtnStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, padding: '6px 12px', borderRadius: 8, border: '1px solid #444', color: '#444', background: 'transparent', cursor: 'pointer', flexShrink: 0 }
 const carryTagStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, background: '#FAEEDA', color: '#BA7517', padding: '3px 8px', borderRadius: 10, width: 'fit-content' }
 const sectionLabelStyle: React.CSSProperties = { fontSize: 12, fontWeight: 600, color: '#999', display: 'flex', alignItems: 'center', gap: 5 }
-const itemRowStyle: React.CSSProperties = { display: 'flex', alignItems: 'flex-start', gap: 10, background: '#f7f7f5', borderRadius: 8, padding: '8px 10px' }
+const itemRowStyle: React.CSSProperties = { display: 'flex', alignItems: 'stretch', background: '#f7f7f5', borderRadius: 8, overflow: 'hidden' }
 const memoChipStyle: React.CSSProperties = { fontSize: 10, padding: '2px 8px', borderRadius: 10, background: '#eee', color: '#777', display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0, fontWeight: 500, marginTop: 1 }
 const smallDelBtnStyle: React.CSSProperties = { width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'transparent', color: '#ccc', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 16 }
