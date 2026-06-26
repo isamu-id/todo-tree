@@ -24,6 +24,7 @@ export type Task = {
   task_date: string
   carry_from: string | null
   carry_reason: string | null
+  user_id: string
   subtasks: SubTask[]
   issues: Issue[]
 }

@@ -1,14 +1,22 @@
-import { createClient } from '@/lib/supabase'
+import { createServerSupabase } from '@/lib/supabase-server'
 import CalendarApp from '@/components/CalendarApp'
+import LoginScreen from '@/components/LoginScreen'
 
 export const dynamic = 'force-dynamic'
 
 export default async function Home() {
-  const supabase = createClient()
+  const supabase = createServerSupabase()
+
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return <LoginScreen />
+  }
 
   const { data: tasks, error: taskErr } = await supabase
     .from('tasks')
     .select('*')
+    .eq('user_id', user.id)
     .order('prio', { ascending: true })
 
   const { data: subtasks, error: subErr } = await supabase
@@ -29,5 +37,5 @@ export default async function Home() {
     issues: (issues ?? []).filter(i => i.task_id === t.id),
   }))
 
-  return <CalendarApp initialTasks={tasksWithChildren} />
+  return <CalendarApp initialTasks={tasksWithChildren} userId={user.id} userEmail={user.email ?? ''} />
 }

@@ -11,7 +11,7 @@ const dowNames = ['日','月','火','水','木','金','土']
 function pad(n: number) { return String(n).padStart(2, '0') }
 function dateKey(y: number, m: number, d: number) { return `${y}-${pad(m + 1)}-${pad(d)}` }
 
-export default function CalendarApp({ initialTasks }: { initialTasks: Task[] }) {
+export default function CalendarApp({ initialTasks, userId, userEmail }: { initialTasks: Task[]; userId: string; userEmail: string }) {
   const supabase = createClient()
   const today = new Date()
 
@@ -44,8 +44,13 @@ export default function CalendarApp({ initialTasks }: { initialTasks: Task[] }) 
     setSelectedDate({ y: d.getFullYear(), m: d.getMonth(), d: d.getDate() })
   }
 
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    window.location.reload()
+  }
+
   async function refreshTasks() {
-    const { data: tasksData } = await supabase.from('tasks').select('*').order('prio', { ascending: true })
+    const { data: tasksData } = await supabase.from('tasks').select('*').eq('user_id', userId).order('prio', { ascending: true })
     const { data: subtasksData } = await supabase.from('subtasks').select('*')
     const { data: issuesData } = await supabase.from('issues').select('*')
     const merged = (tasksData ?? []).map(t => ({
@@ -68,6 +73,7 @@ export default function CalendarApp({ initialTasks }: { initialTasks: Task[] }) 
         dateKey={key}
         dateLabel={`${monthNames[selectedDate.m]}${selectedDate.d}日（${dow}）`}
         tasks={tasks.filter(t => t.task_date === key)}
+        userId={userId}
         onBack={backToCalendar}
         onPrevDay={() => goToAdjacentDate(-1)}
         onNextDay={() => goToAdjacentDate(1)}
@@ -79,6 +85,10 @@ export default function CalendarApp({ initialTasks }: { initialTasks: Task[] }) 
 
   return (
     <div style={{ padding: 32, maxWidth: 640, margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <span style={{ fontSize: 12, color: '#999' }}>{userEmail}</span>
+        <button onClick={handleLogout} style={logoutBtnStyle}>ログアウト</button>
+      </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <button
           onClick={() => setViewMonth(m => { if (m === 0) { setViewYear(y => y - 1); return 11 } return m - 1 })}
@@ -137,4 +147,9 @@ export default function CalendarApp({ initialTasks }: { initialTasks: Task[] }) 
 const navBtnStyle: React.CSSProperties = {
   background: '#f0f0f0', border: 'none', cursor: 'pointer', color: '#444',
   fontSize: 18, padding: '8px 12px', borderRadius: 8,
+}
+
+const logoutBtnStyle: React.CSSProperties = {
+  fontSize: 12, padding: '4px 10px', border: '1px solid #ddd', borderRadius: 8,
+  background: 'transparent', color: '#888', cursor: 'pointer',
 }

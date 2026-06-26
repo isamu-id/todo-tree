@@ -13,6 +13,7 @@ type Props = {
   dateKey: string
   dateLabel: string
   tasks: Task[]
+  userId: string
   onBack: () => void
   onPrevDay: () => void
   onNextDay: () => void
@@ -20,7 +21,7 @@ type Props = {
   supabase: SupabaseClient
 }
 
-export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onPrevDay, onNextDay, onRefresh, supabase }: Props) {
+export default function TaskScreen({ dateKey, dateLabel, tasks, userId, onBack, onPrevDay, onNextDay, onRefresh, supabase }: Props) {
   const [tab, setTab] = useState<'todo' | 'done'>('todo')
   const [showAddModal, setShowAddModal] = useState(false)
   const [newText, setNewText] = useState('')
@@ -87,7 +88,7 @@ export default function TaskScreen({ dateKey, dateLabel, tasks, onBack, onPrevDa
     if (!newText.trim()) return
     const maxPrio = todoTasks.length + 1
     await supabase.from('tasks').insert({
-      text: newText.trim(), memo: newMemo.trim(), done: false, prio: maxPrio, task_date: dateKey,
+      text: newText.trim(), memo: newMemo.trim(), done: false, prio: maxPrio, task_date: dateKey, user_id: userId,
     })
     setNewText(''); setNewMemo(''); setShowAddModal(false)
     await onRefresh()
