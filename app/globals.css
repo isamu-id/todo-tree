@@ -40,3 +40,25 @@ input, textarea { font-family: inherit; }
 .task-card.has-carry {
   border-left: 3px solid #BA7517;
 }
+
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 0;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  color: #444;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.1s ease;
+}
+
+.google-btn:active {
+  transform: scale(0.97);
+  background: #f0f0f0;
+}
+
